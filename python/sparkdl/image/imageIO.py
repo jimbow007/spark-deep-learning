@@ -54,6 +54,18 @@ _ocvTypesByName = {m.name: m for m in _supportedOcvTypes}
 _ocvTypesByOrdinal = {m.ord: m for m in _supportedOcvTypes}
 
 
+#  definitions from spark-images ImageSchema https://github.com/microsoft/spark-images/blob/master/python/sparkimages/ImageSchema.py
+ImageFields = ["origin", "height", "width", "nChannels", "mode", "data"]
+
+ImageSchema = StructType([
+    StructField(ImageFields[0], StringType(),  True),
+    StructField(ImageFields[1], IntegerType(), False),
+    StructField(ImageFields[2], IntegerType(), False),
+    StructField(ImageFields[3], IntegerType(), False),
+    StructField(ImageFields[4], StringType(), False),     # OpenCV-compatible type: CV_8UC3 in most cases
+    StructField(ImageFields[5], BinaryType(), False) ])   # bytes in OpenCV-compatible order: row-wise BGR in most cases
+
+
 def imageTypeByOrdinal(ord):
     if not ord in _ocvTypesByOrdinal:
         raise KeyError("unsupported image type with ordinal %d, supported OpenCV types = %s" % (
@@ -84,8 +96,8 @@ def imageArrayToStruct(imgArray, origin=""):
     imageType = _arrayToOcvMode(imgArray)
     height, width, nChannels = imgArray.shape
     data = bytearray(imgArray.tobytes())
-    return Row(origin=origin, mode=imageType.ord, height=height,
-               width=width, nChannels=nChannels, data=data)
+    return Row(origin=origin, height=height, width=width, 
+               nChannels=nChannels, mode=imageType.ord, data=data)
 
 
 def imageStructToArray(imageRow):
